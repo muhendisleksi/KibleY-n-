@@ -116,25 +116,18 @@ namespace KibleYonu.Commands
                 // İlk kullanımda paneldeki değer, sonrakilerde son girilen değer
                 int varsayilan = _sonCm > 0 ? _sonCm : merkezMeridyen;
 
+                ed.WriteMessage("\n  27=Trakya  30=Marmara/Ege  33=IcAnadolu  36=DoguKaradeniz  39=DoguAnadolu  42/45=Sinir");
+
                 PromptKeywordOptions cmOpt = new PromptKeywordOptions(
                     "\nMerkez Meridyen: ");
-                cmOpt.Keywords.Add("27(Trakya)");
-                cmOpt.Keywords.Add("30(Marmara)");
-                cmOpt.Keywords.Add("33(IcAnadolu)");
-                cmOpt.Keywords.Add("36(DoguKaradeniz)");
-                cmOpt.Keywords.Add("39(DoguAnadolu)");
+                cmOpt.Keywords.Add("27");
+                cmOpt.Keywords.Add("30");
+                cmOpt.Keywords.Add("33");
+                cmOpt.Keywords.Add("36");
+                cmOpt.Keywords.Add("39");
                 cmOpt.Keywords.Add("42");
                 cmOpt.Keywords.Add("45");
-                cmOpt.Keywords.Default = varsayilan + "(Marmara)";
-                // Varsayılanı doğru keyword ile eşleştir
-                foreach (Keyword kw in cmOpt.Keywords)
-                {
-                    if (kw.GlobalName.StartsWith(varsayilan.ToString()))
-                    {
-                        cmOpt.Keywords.Default = kw.GlobalName;
-                        break;
-                    }
-                }
+                cmOpt.Keywords.Default = varsayilan.ToString();
                 cmOpt.AllowNone = true;
 
                 PromptResult cmRes = ed.GetKeywords(cmOpt);
@@ -143,9 +136,7 @@ namespace KibleYonu.Commands
                 int cm = varsayilan;
                 if (cmRes.Status == PromptStatus.OK && !string.IsNullOrEmpty(cmRes.StringResult))
                 {
-                    // Keyword'den sayıyı çıkar ("30(Marmara)" → 30)
-                    string sayi = new string(cmRes.StringResult.TakeWhile(char.IsDigit).ToArray());
-                    if (int.TryParse(sayi, out int parsed))
+                    if (int.TryParse(cmRes.StringResult, out int parsed))
                         cm = parsed;
                 }
                 _sonCm = cm; // Hatırla
