@@ -1,0 +1,301 @@
+<UserControl x:Class="KibleYonu.Views.KiblePanelControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:KibleYonu.Views.Converters"
+             xmlns:models="clr-namespace:KibleYonu.Models"
+             Background="{DynamicResource PanelArkaplanBrush}"
+             FontFamily="Segoe UI">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/KibleStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+            <conv:EnumToBoolConverter x:Key="EnumToBool"/>
+            <conv:InverseBooleanConverter x:Key="InverseBool"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="10">
+
+            <!-- ═══ BAŞLIK ═══ -->
+            <TextBlock Text="KIBLE YÖNÜ" FontSize="16" FontWeight="Bold"
+                       Foreground="{StaticResource KibleBrush}"
+                       HorizontalAlignment="Center" Margin="0,0,0,12"/>
+
+            <!-- ═══ 1) KONUM GİRİŞİ ═══ -->
+            <Border Style="{StaticResource KartBorder}">
+                <StackPanel>
+                    <TextBlock Text="Konum Girişi" Style="{StaticResource KartBaslik}"/>
+
+                    <!-- Şehir Arama -->
+                    <TextBlock Text="Şehir Ara" Style="{StaticResource GirisLabel}"/>
+                    <TextBox Text="{Binding AramaMetni, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource KoyuTextBox}" Margin="0,0,0,4"/>
+
+                    <!-- Arama Sonuçları Popup -->
+                    <ListBox ItemsSource="{Binding AramaSonuclari}"
+                             SelectedItem="{Binding SeciliSehir}"
+                             Visibility="{Binding AramaPaneliAcik, Converter={StaticResource BoolToVis}}"
+                             Style="{StaticResource GecmisListBox}" Margin="0,0,0,8">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TamAd}" Foreground="{StaticResource MetinGriBrush}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Çizimden Seç Butonu -->
+                    <Button Content="Çizimden Seç" Command="{Binding CizimdanSecKomutu}"
+                            Style="{StaticResource IkinciButon}" Margin="0,0,0,8"/>
+
+                    <Separator Background="{StaticResource KenarlıkBrush}" Margin="0,4"/>
+
+                    <!-- Manuel Koordinat Girişi -->
+                    <TextBlock Text="Manuel Koordinat" Style="{StaticResource GirisLabel}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ 2) KOORDİNAT SİSTEMİ ═══ -->
+            <Border Style="{StaticResource KartBorder}">
+                <StackPanel>
+                    <TextBlock Text="Koordinat Sistemi" Style="{StaticResource KartBaslik}"/>
+
+                    <WrapPanel Margin="0,0,0,8">
+                        <RadioButton Content="UTM" Style="{StaticResource KoyuRadioButton}" Margin="0,0,12,0"
+                                     IsChecked="{Binding SeciliSistem, Converter={StaticResource EnumToBool}, ConverterParameter=UTM}"/>
+                        <RadioButton Content="WGS84" Style="{StaticResource KoyuRadioButton}" Margin="0,0,12,0"
+                                     IsChecked="{Binding SeciliSistem, Converter={StaticResource EnumToBool}, ConverterParameter=WGS84}"/>
+                        <RadioButton Content="ED50" Style="{StaticResource KoyuRadioButton}" Margin="0,0,12,0"
+                                     IsChecked="{Binding SeciliSistem, Converter={StaticResource EnumToBool}, ConverterParameter=ED50}"/>
+                        <RadioButton Content="ITRF96" Style="{StaticResource KoyuRadioButton}"
+                                     IsChecked="{Binding SeciliSistem, Converter={StaticResource EnumToBool}, ConverterParameter=ITRF96}"/>
+                    </WrapPanel>
+
+                    <!-- UTM Alanları -->
+                    <StackPanel Visibility="{Binding UtmGorunur, Converter={StaticResource BoolToVis}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Easting (X)" Style="{StaticResource GirisLabel}" Grid.Column="0" Grid.Row="0"/>
+                            <TextBox Text="{Binding EastingMetni, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource KoyuTextBox}" Grid.Column="0" Grid.Row="1"/>
+
+                            <TextBlock Text="Northing (Y)" Style="{StaticResource GirisLabel}" Grid.Column="2" Grid.Row="0"/>
+                            <TextBox Text="{Binding NorthingMetni, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource KoyuTextBox}" Grid.Column="2" Grid.Row="1"/>
+
+                            <!-- UTM/TM Seçici -->
+                            <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" Margin="0,6,0,3">
+                                <RadioButton Content="UTM Zone" IsChecked="{Binding TmModu, Converter={StaticResource InverseBool}}"
+                                             GroupName="ProjTipi" Foreground="White" Margin="0,0,10,0"/>
+                                <RadioButton Content="TM (Merkez M.)" IsChecked="{Binding TmModu}"
+                                             GroupName="ProjTipi" Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- UTM Zone input (TM değilse) -->
+                            <TextBox Text="{Binding UtmZone, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource KoyuTextBox}" Grid.Column="0" Grid.Row="3"
+                                     Visibility="{Binding UtmZoneGorunur, Converter={StaticResource BoolToVis}}"/>
+
+                            <!-- Merkez Meridyen input (TM ise) -->
+                            <TextBox Text="{Binding MerkezMeridyen, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource KoyuTextBox}" Grid.Column="0" Grid.Row="3"
+                                     Visibility="{Binding MerkezMeridyenGorunur, Converter={StaticResource BoolToVis}}"/>
+
+                            <CheckBox Content="Kuzey Yarıküre" IsChecked="{Binding KuzeyYarikure}"
+                                      Style="{StaticResource KoyuCheckBox}"
+                                      Grid.Column="2" Grid.Row="3" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Enlem/Boylam Alanları -->
+                    <StackPanel Visibility="{Binding EnlemBoylamGorunur, Converter={StaticResource BoolToVis}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Enlem (Lat)" Style="{StaticResource GirisLabel}" Grid.Column="0" Grid.Row="0"/>
+                            <TextBox Text="{Binding EnlemMetni, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource KoyuTextBox}" Grid.Column="0" Grid.Row="1"/>
+
+                            <TextBlock Text="Boylam (Lon)" Style="{StaticResource GirisLabel}" Grid.Column="2" Grid.Row="0"/>
+                            <TextBox Text="{Binding BoylamMetni, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource KoyuTextBox}" Grid.Column="2" Grid.Row="1"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ 3) PUSULA AYARLARI ═══ -->
+            <Border Style="{StaticResource KartBorder}">
+                <StackPanel>
+                    <TextBlock Text="Pusula Ayarları" Style="{StaticResource KartBaslik}"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Yarıçap" Style="{StaticResource GirisLabel}" Grid.Column="0"/>
+                        <TextBox Text="{Binding YaricapMetni, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource KoyuTextBox}" Grid.Column="0" Grid.Row="1"/>
+
+                        <TextBlock Text="Detay Seviyesi" Style="{StaticResource GirisLabel}" Grid.Column="2"/>
+                        <ComboBox Style="{StaticResource KoyuComboBox}" Grid.Column="2" Grid.Row="1"
+                                  SelectedIndex="1"
+                                  SelectionChanged="DetayCombo_SelectionChanged">
+                            <ComboBoxItem Content="Basit"/>
+                            <ComboBoxItem Content="Normal"/>
+                            <ComboBoxItem Content="Detaylı"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <CheckBox Content="Manyetik sapma göster"
+                              IsChecked="{Binding ManyetikSapmaGoster}"
+                              Style="{StaticResource KoyuCheckBox}" Margin="0,8,0,0"/>
+                    <CheckBox Content="Bilgi paneli göster"
+                              IsChecked="{Binding BilgiPaneliGoster}"
+                              Style="{StaticResource KoyuCheckBox}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ HESAPLA BUTONU ═══ -->
+            <Button Content="HESAPLA" Command="{Binding HesaplaKomutu}"
+                    Style="{StaticResource VurguButon}" Margin="0,0,0,8"
+                    HorizontalAlignment="Stretch"/>
+
+            <!-- Hata Mesajı -->
+            <TextBlock Text="{Binding HataMesaji}" Foreground="#FFE74C3C" FontSize="11"
+                       TextWrapping="Wrap" Margin="0,0,0,4"
+                       Visibility="{Binding HataMesaji, Converter={StaticResource NullToVis}}"/>
+
+            <!-- ═══ 4) SONUÇLAR + MİNİ PUSULA ═══ -->
+            <Border Style="{StaticResource KartBorder}"
+                    Visibility="{Binding SonucVar, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="Sonuçlar" Style="{StaticResource KartBaslik}"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="90"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Sol: Bilgiler -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding KibleAcisiGoruntusu}" Style="{StaticResource BuyukAciMetin}"
+                                       HorizontalAlignment="Left"/>
+                            <TextBlock Style="{StaticResource AltBaslik}">
+                                <Run Text="Mesafe: "/><Run Text="{Binding MesafeGoruntusu, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding KoordinatGoruntusu}" Style="{StaticResource AltBaslik}"/>
+                            <TextBlock Style="{StaticResource AltBaslik}">
+                                <Run Text="Konum: "/><Run Text="{Binding Sonuc.KonumAdi, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource AltBaslik}"
+                                       Visibility="{Binding ManyetikSapmaGoster, Converter={StaticResource BoolToVis}}">
+                                <Run Text="Manyetik Sapma: "/><Run Text="{Binding ManyetikSapmaGoruntusu, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Sağ: Mini Pusula -->
+                        <Canvas Grid.Column="1" Width="80" Height="80" Margin="4,0,0,0">
+                            <!-- Dış daire -->
+                            <Ellipse Width="76" Height="76" Canvas.Left="2" Canvas.Top="2"
+                                     Stroke="{StaticResource MetinGriBrush}" StrokeThickness="1.5"/>
+                            <!-- Merkez nokta -->
+                            <Ellipse Width="4" Height="4" Canvas.Left="38" Canvas.Top="38"
+                                     Fill="{StaticResource MetinBeyazBrush}"/>
+                            <!-- Kuzey işareti -->
+                            <TextBlock Text="K" FontSize="8" Foreground="{StaticResource KuzeyBrush}"
+                                       Canvas.Left="37" Canvas.Top="4"/>
+                            <!-- Kıble oku (döndürülebilir) -->
+                            <Line X1="40" Y1="40" X2="40" Y2="10" Canvas.Left="0" Canvas.Top="0"
+                                  Stroke="{StaticResource KibleBrush}" StrokeThickness="2.5"
+                                  RenderTransformOrigin="0,0">
+                                <Line.RenderTransform>
+                                    <RotateTransform Angle="{Binding MiniPusulaAcisi}" CenterX="40" CenterY="40"/>
+                                </Line.RenderTransform>
+                            </Line>
+                        </Canvas>
+                    </Grid>
+
+                    <!-- Butonlar -->
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Content="Pusulayı Yerleştir" Command="{Binding YerlestirKomutu}"
+                                Style="{StaticResource KibleButon}" Grid.Column="0"/>
+                        <Button Content="Kopyala" Command="{Binding SonucKopyalaKomutu}"
+                                Style="{StaticResource IkinciButon}" Grid.Column="2"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ 5) GEÇMİŞ ═══ -->
+            <Border Style="{StaticResource KartBorder}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Geçmiş" Style="{StaticResource KartBaslik}" Grid.Column="0"/>
+                        <Button Content="Temizle" Command="{Binding GecmisTemizleKomutu}"
+                                Style="{StaticResource IkinciButon}" Grid.Column="1"
+                                Padding="8,2" FontSize="10"/>
+                    </Grid>
+
+                    <ListBox ItemsSource="{Binding Gecmis}"
+                             Style="{StaticResource GecmisListBox}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding OzetMetni}" Foreground="{StaticResource MetinGriBrush}"
+                                           FontSize="10" Margin="2"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ ALT BİLGİ ═══ -->
+            <TextBlock HorizontalAlignment="Center" Margin="0,8,0,4"
+                       Foreground="{StaticResource MetinGriBrush}" FontSize="13">
+                <Run Text="Abdulbaki Atakan — 0545 563 68 67"/>
+            </TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

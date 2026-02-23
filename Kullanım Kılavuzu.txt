@@ -1,0 +1,180 @@
+============================================================
+         KIBLE YONU BULUCU - KULLANIM KILAVUZU
+              AutoCAD / Civil 3D 2025 Eklentisi
+                       Surum 1.0
+============================================================
+
+
+1. KURULUM
+------------------------------------------------------------
+
+   a) Gereksinimler:
+      - AutoCAD 2025 veya Civil 3D 2025
+      - .NET 8.0 Runtime (x64)
+
+   b) DLL Yukleme:
+      1. AutoCAD'i acin
+      2. Komut satirina NETLOAD yazin ve Enter'a basin
+      3. Acilan pencereden su dosyayi secin:
+         KibleYonu.dll
+      4. "Yukle" butonuna basin
+      5. Guvenlik uyarisi cikarsa "Her zaman yukle" secin
+
+   c) Otomatik yukleme (istege bagli):
+      AutoCAD her acildiginda otomatik yuklenmesi icin
+      acad.lsp veya bundle yapilandirmasi kullanilabilir.
+
+
+2. KOMUTLAR
+------------------------------------------------------------
+
+   KIBLEYONU        Ana paneli acar/kapatir (toggle)
+   KIBLEYONU_KAPAT  Paneli kapatir
+   KIBLEYONU_HIZLI  Panel acmadan hizli hesaplama
+                    (komut satirindan UTM girisli)
+
+
+3. ANA PANEL KULLANIMI
+------------------------------------------------------------
+
+   Panel acilinca 5 ana bolum gorursunuz:
+
+   [A] KONUM GIRISI
+   ~~~~~~~~~~~~~~~~
+   Uc farkli yontemle konum belirleyebilirsiniz:
+
+   Yontem 1 - Sehir/Ilce Arama:
+     - Arama kutusuna en az 2 karakter yazin
+     - Ornek: "Arnavut" yazinca "Arnavutkoy, Istanbul" cikar
+     - Ornek: "Istanbul" yazinca tum Istanbul ilceleri listelenir
+     - Ornek: "Berlin" yazinca "Berlin, Almanya" cikar
+     - Listeden secim yapinca koordinatlar otomatik dolar
+     - UTM Zone ve Merkez Meridyen secilen ilceye gore otomatik ayarlanir
+     - NOT: 81 ilin 972 ilcesi + 441 uluslararasi sehir mevcuttur
+
+   Yontem 2 - Cizimden Sec:
+     - "Cizimden Sec" butonuna basin
+     - AutoCAD ciziminde bir nokta tiklayin
+     - Koordinatlar otomatik alinir ve en yakin ilce bulunur
+
+   Yontem 3 - Manuel Koordinat:
+     - "Manuel Koordinat" bolumunu acin
+     - Koordinat sistemini secin (UTM / WGS84 / ED50 / ITRF96)
+     - Degerleri girin
+
+   [B] KOORDINAT SISTEMI SECIMI
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   - UTM: Easting (X), Northing (Y), Zone veya Merkez Meridyen
+     Kuzey yarikure secenegi vardir (Turkiye icin isaretli olmali)
+     NOT: Ilce secildiginde Zone ve Merkez Meridyen otomatik dolar:
+       Zone 35 (27°) → Trakya, Bati Ege
+       Zone 36 (33°) → Ic Anadolu, Akdeniz, Bati Karadeniz
+       Zone 37 (39°) → Dogu Karadeniz, Dogu Anadolu batisi
+       Zone 38 (45°) → Dogu Anadolu dogusu (Hakkari, Igdir)
+   - WGS84: Enlem ve Boylam (derece cinsinden, ornek: 41.0082)
+   - ED50: Eski haritalar icin
+   - ITRF96: Turkiye CORS sistemi icin
+
+   [C] PUSULA AYARLARI
+   ~~~~~~~~~~~~~~~~~~~
+   - Yaricap: Pusulanin cizim boyutu
+   - Detay Seviyesi: Basit / Normal / Detayli
+   - Manyetik Sapma: Gercek kuzey ile manyetik kuzey farki
+   - Bilgi Paneli: Pusula yaninda bilgi metni gosterir
+
+   [D] SONUCLAR
+   ~~~~~~~~~~~~
+   Hesaplama tamamlaninca su bilgiler gosterilir:
+   - Kible Acisi (derece, kuzeyden saat yonunde)
+   - Kabe'ye Mesafe (km)
+   - Kullanilan Koordinat
+   - Konum Adi (en yakin ilce/sehir)
+   - Manyetik Sapma degeri
+
+   Butonlar:
+   - "Pusulaya Yerlestir": AutoCAD cizimine pusula ekler
+     (fare ile konumu ve donusu ayarlayabilirsiniz)
+   - "Kopyala": Sonuclari panoya kopyalar
+
+   [E] GECMIS
+   ~~~~~~~~~~
+   - Son 20 hesaplama otomatik kaydedilir
+   - Gecmis kayda tiklayarak tekrar yukleme yapabilirsiniz
+   - "Temizle" butonu tum gecmisi siler
+
+
+4. HIZLI HESAPLAMA MODU
+------------------------------------------------------------
+
+   Komut satirina KIBLEYONU_HIZLI yazin.
+
+   - Panel acilmadan dogrudan UTM koordinati girin
+   - Sonuc komut satirinda gosterilir
+   - Ardindan Jig ile pusulayi interaktif yerlestirin
+
+
+5. ILCE BAZLI KONUM ARAMA
+------------------------------------------------------------
+
+   Uygulama Turkiye'nin 81 ilinin tum ilcelerini icerir (972 ilce).
+   Bu sayede ayni il icindeki farkli ilceler icin dogru kible
+   acisi hesaplanir.
+
+   Ornekler:
+   - Istanbul-Arnavutkoy ve Istanbul-Sancaktepe arasinda
+     yaklasik 0.8 derece kible acisi farki vardir
+   - "Istanbul" arandiginda 39 ilcenin tamami listelenir
+   - "Cizimden Sec" ile en yakin ilce otomatik bulunur
+
+   Uluslararasi sehirler de desteklenir:
+   441 buyuk sehir (Berlin, Paris, New York, Mekke vb.)
+
+
+6. KOORDINAT DONUSUMLERI
+------------------------------------------------------------
+
+   Eklenti su koordinat sistemlerini destekler:
+   - WGS84 (GPS koordinatlari)
+   - UTM (Universal Transverse Mercator)
+   - ED50 (European Datum 1950)
+   - ITRF96 (Turkiye ulusal referans sistemi)
+
+   Turkiye UTM zonlari: 35-38 (Merkez Meridyen: 27°-45°)
+   Donusum otomatik yapilir, sonuclar WGS84'e cevrilir.
+
+   NOT: Ilce/sehir secildiginde UTM Zone ve Merkez Meridyen
+   otomatik olarak ayarlanir. Manuel giriste kendiniz secmelisiniz.
+
+
+7. SSS (SIK SORULAN SORULAR)
+------------------------------------------------------------
+
+   S: DLL yuklenmiyor, hata alirim.
+   C: AutoCAD 2025 ve .NET 8.0 Runtime (x64) yuklu oldugundan
+      emin olun. NETLOAD komutunu kullanin.
+
+   S: Sehir aramada sonuc cikmiyor.
+   C: En az 2 karakter girin. Turkce karakter yazmasaniz da
+      bulur (ornek: "istanbul" veya "Istanbul" ikisi de calisir).
+
+   S: Kible acisi dogru mu?
+   C: Great Circle (Buyuk Daire) yontemiyle hesaplanir.
+      Kabe koordinatlari: 21.42252 N, 39.82621 E
+      Hassasiyet: ~0.01 derece
+
+   S: Manyetik sapma nedir?
+   C: Pusulanin gosterdigi kuzey ile gercek kuzey arasindaki
+      farktir. Turkiye'de yaklasik 4-6 derece arasindadir.
+      Yildan yila degisir.
+
+   S: Panel kapandi, nasil acarim?
+   C: KIBLEYONU komutunu tekrar yazin.
+
+
+============================================================
+  Kabe Koordinatlari: 21.42252 N, 39.82621 E
+  Veri Tabani: 972 Turk ilcesi + 441 uluslararasi sehir
+------------------------------------------------------------
+  Gelistirici: Abdulbaki Atakan
+  Iletisim:    0545 563 68 67
+============================================================
